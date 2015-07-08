@@ -9,6 +9,7 @@ function fetchIdeas() {
   $.getJSON('/ideas').then(function (ideas) {
     // console.log(ideas);
     var renderedIdeas = ideas.map(renderIdea);
+    renderedIdeas.forEach(bindDeleteEvent);
     $('#ideas').html(renderedIdeas);
   });
 }
@@ -61,5 +62,26 @@ function bindCreateIdea() {
 
 function appendIdea(data) {
   var ideaMarkup = renderIdea(data, data.id);
+  bindDeleteEvent(ideaMarkup);
   $(ideaMarkup).appendTo('#ideas');
+}
+
+
+function bindDeleteEvent(idea) {
+  $(idea).find('.delete').on('click', function () {
+    var $idea = $(this).parents('.idea');
+    var id = $idea.data('id');
+    // $.ajax('/ideas' + id { method: 'delete'}).then(function {
+    //   $idea.remove()
+    // })
+
+    $.ajax({
+      type: "DELETE",
+      url:  '/ideas/' + id,        // some api's need the '.json' - some don't
+      // data: ideaParams,      // isolate Params into variable before passing in
+      success: function() {  // this is a behavior we're adding, if succesful (append data)
+        $idea.remove();
+      }
+    });
+  })
 }

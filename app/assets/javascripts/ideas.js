@@ -1,35 +1,64 @@
 $(document).ready(function() {
-  fetchIdeas()
+  fetchIdeas();
+  bindCreateIdea();
   // createPost()
-})
+});
 
 
 function fetchIdeas() {
-  $.ajax({
-    type: 'GET',
-    url:  '/',     // or /index.json ???
-    success: function(ideas) {
-      $.each(ideas, function(index, idea) {
-        var newestIdeaID = parseInt($('.idea').last().attr('data-id'))  // parseInt is like .to_i in Ruby
-
-        // if there are no ideas, OR if idea is newer than ideas we already have, THEN render ideas
-        if (isNan(newestIdeaID) || idea.id > newestIdeaID) {
-          renderIdea(idea)
-        }
-      })
-    }
-  })
+  $.getJSON('/ideas').then(function (ideas) {
+    // console.log(ideas);
+    var renderedIdeas = ideas.map(renderIdea);
+    $('#ideas').html(renderedIdeas);
+  });
 }
 
 
-function renderIdea(idea) {
-  $("#ideas-list").append(
-  "<div class='idea' data-id=" +
-  idea.id +
-  "><h6>Title: " +
-  idea.title +
-  "</h6><p>" +
-  idea.body +
-  "</p></div>"
-  )
+function renderIdea(idea, id) {
+  return $('<div class="idea" data-id="' + id + '">' +
+    '<h2>' + idea.title + '</h2>' +
+    '<p>' + idea.body + '</p>' +
+    '<div class="buttons">' +
+      '<button class="edit">Edit</button>' +
+      '<button class="delete">Delete</button>' +
+    '</div>' +
+  '</div>');
+}
+
+
+function bindCreateIdea() {
+  var $form = $('.new-idea-form');
+  var $title = $form.find('.new-idea-title');
+  var $body = $form.find('.new-idea-body');
+  var $submit = $form.find('input[type="submit"]');
+
+  $submit.on('click', function (event) {
+    // console.log("worky?")  // use this to prove event is working
+    event.preventDefault();
+
+    // TRY $.ajax style instead
+    // double-check ideaParams
+    var ideaParams = { idea: { title: $title.val(), body: $body.val() } }
+    // var ideaParams = { idea: { title: $("#idea-title").val(), body: $("#idea-body").val() } }
+    // console.log(ideaParams)
+    $.ajax({
+      type: "POST",
+      url:  "/ideas",        // some api's need the '.json' - some don't
+      data: ideaParams,      // isolate Params into variable before passing in
+      success: function(newIdea) {  // this is a behavior we're adding, if succesful (append data)
+        appendIdea(newIdea)
+      }
+    });
+
+    // $.post('/ideas', {
+    //   title: $title.val(),
+    //   body: $body.val()
+    // }).then(appendIdea);
+  });
+}
+
+
+function appendIdea(data) {
+  var ideaMarkup = renderIdea(data);
+  $(ideaMarkup).appendTo('#ideas');
 }

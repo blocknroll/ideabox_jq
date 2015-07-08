@@ -1,6 +1,7 @@
 $(document).ready(function() {
   fetchIdeas();
   bindCreateIdea();
+  // bindDeleteEvent();
   // createPost()
 });
 
@@ -9,6 +10,7 @@ function fetchIdeas() {
   $.getJSON('/ideas').then(function (ideas) {
     // console.log(ideas);
     var renderedIdeas = ideas.map(renderIdea);
+    renderedIdeas.forEach(bindDeleteEvent);  // bind the delete button to each idea.
     $('#ideas').html(renderedIdeas);
   });
 }
@@ -24,6 +26,7 @@ function renderIdea(idea, id) {
     '</div>' +
   '</div>');
 }
+
 
 
 function bindCreateIdea() {
@@ -44,7 +47,7 @@ function bindCreateIdea() {
 
     $.ajax({
       type: "POST",
-      url:  "/ideas.json",        // some api's need the '.json' - some don't
+      url:  "/ideas",        // some api's need the '.json' - some don't
       data: ideaParams,      // isolate Params into variable before passing in
       success: function(newIdea) {  // this is a behavior we're adding, if succesful (append data)
         appendIdea(newIdea)
@@ -58,8 +61,37 @@ function bindCreateIdea() {
   });
 }
 
-
 function appendIdea(data) {
-  var ideaMarkup = renderIdea(data, data.id);
+  var ideaMarkup = renderIdea(data);
   $(ideaMarkup).appendTo('#ideas');
+}
+
+
+
+function bindDeleteEvent(idea) {
+  $(idea).find('.delete').on('click', function () {   // find button with class 'delete'
+    // traverse the DOM back up to the original idea
+    var $idea = $(this).parents('.idea');  // 'this' is the the button itself. then look for 'parents' with the class of 'idea', which is the whole idea element. from here we can get the data attribute from the idea.
+    // console.log($idea)
+    var id = $idea.data('id');  // now we get the id of idea we're deleting
+
+    // send an ajax request...
+    // $.ajax('/ideas/' + id, { method: 'delete' }).then(function () {  // pass in the id of the idea we want to delete. and the http method.  after succes, 'then'...
+    //   $idea.remove();  // if the server has removed idea from the db, also remove idea from the DOM.
+    // })
+    // console.log(id)
+
+    $.ajax({
+      // url:  "/ideas/" + $idea.attr('data-id'),  // some api's need the '.json' - some don't
+      url:  "/ideas/" + id,  // some api's need the '.json' - some don't
+      dataType: 'json',
+      data: { id: id },
+      type: "DELETE",
+      // data: ideaParams,      // isolate Params into variable before passing in
+      success: function() {  // this is a behavior we're adding, if succesful (append data)
+        $idea.remove();
+      }
+    });
+
+  });
 }

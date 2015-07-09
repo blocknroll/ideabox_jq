@@ -67,6 +67,8 @@ function appendIdea(data) {
 }
 
 
+
+
 function bindDeleteEvent(idea) {
   $(idea).find('.delete').on('click', function () {
     var $idea = $(this).parents('.idea');

@@ -23,10 +23,12 @@ class IdeasController < ApplicationController
   def edit
   end
 
+
   # POST /ideas
   # POST /ideas.json
   def create
     respond_with Idea.create(idea_params)
+
     # @idea = Idea.new(idea_params)
     #
     # respond_to do |format|
@@ -40,9 +42,14 @@ class IdeasController < ApplicationController
     # end
   end
 
+
   # PATCH/PUT /ideas/1
   # PATCH/PUT /ideas/1.json
   def update
+    # @idea.update(idea_params)
+
+    # respond_with Idea.update(params[:id], data)
+
     respond_to do |format|
       if @idea.update(idea_params)
         format.html { redirect_to @idea, notice: 'Idea was successfully updated.' }
@@ -53,6 +60,7 @@ class IdeasController < ApplicationController
       end
     end
   end
+
 
   # DELETE /ideas/1
   # DELETE /ideas/1.json
@@ -66,14 +74,15 @@ class IdeasController < ApplicationController
     # end
   end
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_idea
-      @idea = Idea.find(params[:id])
-    end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def idea_params
-      params.require(:idea).permit(:title, :body)
-    end
+      private
+        # Use callbacks to share common setup or constraints between actions.
+        def set_idea
+          @idea = Idea.find(params[:id])
+        end
+
+        # Never trust parameters from the scary internet, only allow the white list through.
+        def idea_params
+          params.require(:idea).permit(:title, :body)
+        end
 end

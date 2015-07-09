@@ -10,6 +10,8 @@ function fetchIdeas() {
     // console.log(ideas);
     var renderedIdeas = ideas.map(renderIdea);
     renderedIdeas.forEach(bindDeleteEvent);
+    renderedIdeas.forEach(bindEditEvent);
+    renderedIdeas.forEach(bindUpdateEvent);
     $('#ideas').html(renderedIdeas);
   });
 }
@@ -22,6 +24,13 @@ function renderIdea(idea, id) {
     '<div class="buttons">' +
       '<button class="edit">Edit</button>' +
       '<button class="delete">Delete</button>' +
+      '<form class="edit-idea-form">' +
+        '<label>Title</label>' +
+        '<input type=text placeholder="Title" class="idea-title">' +
+        '<label>Body</label>' +
+        '<input type=text placeholder="Body" class="idea-body">' +
+        '<input type="submit" class="update" value="Update Idea">' +
+      '</form>' +
     '</div>' +
   '</div>');
 }
@@ -63,6 +72,8 @@ function bindCreateIdea() {
 function appendIdea(data) {
   var ideaMarkup = renderIdea(data, data.id);
   bindDeleteEvent(ideaMarkup);
+  bindEditEvent(ideaMarkup);
+  bindUpdateEvent(ideaMarkup);
   $(ideaMarkup).appendTo('#ideas');
 }
 
@@ -85,5 +96,65 @@ function bindDeleteEvent(idea) {
         $idea.remove();
       }
     });
+  })
+}
+
+
+
+function bindEditEvent(idea) {
+  $(idea).find('.edit').on('click', function () {
+    var $idea = $(this).parents('.idea');
+    var $form = $(this).siblings('.edit-idea-form');
+
+    if ($form.is(':hidden')) {
+      var title = $idea.find('h2').text();
+      var body = $idea.find('p').text();
+      $form.find('.idea-title').val(title);
+      $form.find('.idea-body').val(body);
+    }
+
+    $form.toggle();
+  })
+}
+
+
+function bindUpdateEvent(idea) {
+  $(idea).find('update').on('click', function (event) {
+    event.preventDefault();
+
+    var $idea = $(this).parents('.idea');
+    var id = $idea.data('id');
+    var $title = $(this).siblings('.idea-title').val();
+    var $body = $(this).siblings('.idea-body').val();
+
+    // $.ajax('/ideas/' + id, {
+    //   type: "PUT",
+    //   data: {
+    //     title: $title,
+    //     body: $body,
+    //   }
+    // }).then(function (idea) {
+    //   $idea.find('h2').text(idea.title);
+    //   $idea.find('p').text(idea.body);
+    //   $idea.find('form').hide();
+    // })
+
+    var ideaParams = { idea: { title: $title.val(), body: $body.val() } }
+
+    $.ajax({
+      type: "PUT",
+      url:  '/ideas/' + id,
+      // data: {
+      //   title: $title,
+      //   body: $body,
+      // }
+      data: ideaParams,     // some api's need the '.json' - some don't
+      success: function(idea) {  // this is a behavior we're adding, if succesful (append data)
+      $idea.find('h2').text(idea.title);
+      $idea.find('p').text(idea.body);
+      $idea.find('form').hide();
+      }
+    });
+
   })
 }
